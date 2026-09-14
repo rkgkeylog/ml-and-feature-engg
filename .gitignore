@@ -1,0 +1,7 @@
+# Temporary image artifacts generated during build
+*.png
+
+# Python virtual environment & cache
+__pycache__/
+*.pyc
+.pytest_cache/

@@ -4,261 +4,202 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# 1. Generate Synthetic Experimental Datasets
+# Set global matplotlib style for sleek enterprise dark-theme charts
+plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
+plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
+
+# ---------------------------------------------------------
+# 1. GENERATE EXPERIMENTAL DATASETS & MATPLOTLIB CHARTS
+# ---------------------------------------------------------
 np.random.seed(42)
 days = np.arange(1, 61)
 
-# Plot 1: Mean (Denoising & Directional Macro Trend)
+# --- Plot 1: Rolling Mean (Denoising & Macro Trend) ---
 raw_trend = 50 + (days * 0.8) + np.random.randint(-8, 9, size=60)
 df1 = pd.DataFrame({'Day': days, 'Raw': raw_trend})
 df1['Roll_Mean_3D'] = df1['Raw'].shift(1).rolling(3).mean()
 df1['Roll_Mean_7D'] = df1['Raw'].shift(1).rolling(7).mean()
 
 fig, ax = plt.subplots(figsize=(10, 4.8), dpi=150)
-ax.plot(
-    df1['Day'],
-    df1['Raw'],
-    color='#94a3b8',
-    linestyle='--',
-    linewidth=1.5,
-    label='Raw Observations (Noisy Sensor/Price)',
-)
-ax.plot(
-    df1['Day'],
-    df1['Roll_Mean_3D'],
-    color='#0284c7',
-    linewidth=2.2,
-    label='3-Day Rolling Mean (Responsive Smoothing)',
-)
-ax.plot(
-    df1['Day'],
-    df1['Roll_Mean_7D'],
-    color='#ea580c',
-    linewidth=2.6,
-    label='7-Day Rolling Mean (Macro Trendline)',
-)
-ax.set_title(
-    '1. Rolling Mean: Denoising High-Frequency Jitter & Isolating Trend',
-    fontweight='bold',
-    fontsize=12,
-    pad=10,
-)
+ax.plot(df1['Day'], df1['Raw'], color='#94a3b8', linestyle='--', linewidth=1.5, label='Raw Observations (Noisy Sensor/Price)')
+ax.plot(df1['Day'], df1['Roll_Mean_3D'], color='#0284c7', linewidth=2.2, label='3-Day Rolling Mean (Responsive Smoothing)')
+ax.plot(df1['Day'], df1['Roll_Mean_7D'], color='#ea580c', linewidth=2.6, label='7-Day Rolling Mean (Macro Trendline)')
+ax.set_title('1. Rolling Mean: Denoising High-Frequency Jitter & Isolating Trend', fontweight='bold', fontsize=12, pad=10)
 ax.set_xlabel('Day Index (t)', fontsize=10)
 ax.set_ylabel('Metric Value', fontsize=10)
-ax.legend(
-    loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1'
-)
+ax.legend(loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1')
 ax.grid(True, linestyle=':', alpha=0.6)
 plt.tight_layout()
 fig.savefig('tutorial_chart1.png')
 plt.close()
 
-# Plot 2: StdDev (Regime Shifts & Volatility Risk)
-regime_vals = np.concatenate([
-    100 + np.random.randint(-2, 3, size=30),
-    100 + np.random.randint(-18, 19, size=30),
-])
+# --- Plot 2: Rolling StdDev (Volatility & Regime Shifts) ---
+regime_vals = np.concatenate([100 + np.random.randint(-2, 3, size=30), 100 + np.random.randint(-18, 19, size=30)])
 df2 = pd.DataFrame({'Day': days, 'Value': regime_vals})
 df2['Roll_Std_7D'] = df2['Value'].shift(1).rolling(7).std(ddof=1)
 df2['Roll_Mean_7D'] = df2['Value'].shift(1).rolling(7).mean()
 
 fig, ax1 = plt.subplots(figsize=(10, 4.8), dpi=150)
-ax1.plot(
-    df2['Day'],
-    df2['Value'],
-    color='#2563eb',
-    alpha=0.75,
-    linewidth=1.5,
-    label='Raw Value (Oscillating around 100)',
-)
-ax1.plot(
-    df2['Day'],
-    df2['Roll_Mean_7D'],
-    color='#475569',
-    linestyle='-',
-    linewidth=2,
-    label='Rolling Mean (Baseline ~100)',
-)
+ax1.plot(df2['Day'], df2['Value'], color='#2563eb', alpha=0.75, linewidth=1.5, label='Raw Value (Oscillating around 100)')
+ax1.plot(df2['Day'], df2['Roll_Mean_7D'], color='#475569', linestyle='-', linewidth=2, label='Rolling Mean (Baseline ~100)')
 ax1.set_ylabel('Raw Value & Rolling Mean', fontsize=10)
 ax1.set_xlabel('Day Index (t)', fontsize=10)
 
 ax2 = ax1.twinx()
-ax2.plot(
-    df2['Day'],
-    df2['Roll_Std_7D'],
-    color='#dc2626',
-    linewidth=2.5,
-    label='7D Rolling StdDev (Volatility Signal)',
-)
+ax2.plot(df2['Day'], df2['Roll_Std_7D'], color='#dc2626', linewidth=2.5, label='7D Rolling StdDev (Volatility Signal)')
 ax2.set_ylabel('Rolling Standard Deviation', color='#dc2626', fontsize=10)
 ax2.tick_params(axis='y', labelcolor='#dc2626')
 
-ax1.axvline(
-    31,
-    color='#0f172a',
-    linestyle=':',
-    linewidth=2,
-    label='Regime Shift Transition (Day 31)',
-)
+ax1.axvline(31, color='#0f172a', linestyle=':', linewidth=2, label='Regime Shift Transition (Day 31)')
 lines1, labels1 = ax1.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
-ax1.legend(
-    lines1 + lines2,
-    labels1 + labels2,
-    loc='upper left',
-    frameon=True,
-    facecolor='#ffffff',
-    edgecolor='#cbd5e1',
-)
-ax1.set_title(
-    '2. Rolling StdDev: Exposing Hidden Instability & Regime Transitions',
-    fontweight='bold',
-    fontsize=12,
-    pad=10,
-)
+ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1')
+ax1.set_title('2. Rolling StdDev: Exposing Hidden Instability & Regime Transitions', fontweight='bold', fontsize=12, pad=10)
 ax1.grid(True, linestyle=':', alpha=0.6)
 plt.tight_layout()
 fig.savefig('tutorial_chart2.png')
 plt.close()
 
-# Plot 3: Min / Max Envelopes & Breakouts
+# --- Plot 3: Min / Max Envelopes & Breakouts ---
 trend_breakout = np.concatenate([
     100 + np.random.randint(-5, 6, size=33),
     125 + np.random.randint(-3, 4, size=12),
-    90 + np.random.randint(-4, 5, size=15),
+    90 + np.random.randint(-4, 5, size=15)
 ])
 df3 = pd.DataFrame({'Day': days, 'Val': trend_breakout})
 df3['Max_10D'] = df3['Val'].shift(1).rolling(10).max()
 df3['Min_10D'] = df3['Val'].shift(1).rolling(10).min()
 
 fig, ax = plt.subplots(figsize=(10, 4.8), dpi=150)
-ax.plot(
-    df3['Day'],
-    df3['Val'],
-    label='Live Value at Time t',
-    color='#0f172a',
-    linewidth=2,
-)
-ax.plot(
-    df3['Day'],
-    df3['Max_10D'],
-    label='10D Rolling Max (Resistance Ceiling)',
-    color='#ea580c',
-    linestyle='--',
-    linewidth=1.8,
-)
-ax.plot(
-    df3['Day'],
-    df3['Min_10D'],
-    label='10D Rolling Min (Support Floor)',
-    color='#0284c7',
-    linestyle='--',
-    linewidth=1.8,
-)
-ax.fill_between(
-    df3['Day'],
-    df3['Min_10D'],
-    df3['Max_10D'],
-    color='#fed7aa',
-    alpha=0.35,
-    label='Dynamic Operating Corridor',
-)
-ax.axvline(
-    34,
-    color='#16a34a',
-    linestyle=':',
-    linewidth=2,
-    label='Bullish Breakout (Day 34: Val > Max)',
-)
-ax.axvline(
-    46,
-    color='#dc2626',
-    linestyle=':',
-    linewidth=2,
-    label='Bearish Breakdown (Day 46: Val < Min)',
-)
-ax.set_title(
-    '3. Dynamic Operating Envelopes: Min/Max Boundaries & Live Breakout'
-    ' Detection',
-    fontweight='bold',
-    fontsize=12,
-    pad=10,
-)
+ax.plot(df3['Day'], df3['Val'], label='Live Value at Time t', color='#0f172a', linewidth=2)
+ax.plot(df3['Day'], df3['Max_10D'], label='10D Rolling Max (Resistance Ceiling)', color='#ea580c', linestyle='--', linewidth=1.8)
+ax.plot(df3['Day'], df3['Min_10D'], label='10D Rolling Min (Support Floor)', color='#0284c7', linestyle='--', linewidth=1.8)
+ax.fill_between(df3['Day'], df3['Min_10D'], df3['Max_10D'], color='#fed7aa', alpha=0.35, label='Dynamic Operating Corridor')
+ax.axvline(34, color='#16a34a', linestyle=':', linewidth=2, label='Bullish Breakout (Day 34: Val > Max)')
+ax.axvline(46, color='#dc2626', linestyle=':', linewidth=2, label='Bearish Breakdown (Day 46: Val < Min)')
+ax.set_title('3. Dynamic Operating Envelopes: Min/Max Boundaries & Live Breakout Detection', fontweight='bold', fontsize=12, pad=10)
 ax.set_xlabel('Day Index (t)', fontsize=10)
 ax.set_ylabel('Metric Value', fontsize=10)
 ax.set_ylim(75, 140)
-ax.legend(
-    loc='upper right', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1'
-)
+ax.legend(loc='upper right', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1')
 ax.grid(True, linestyle=':', alpha=0.6)
 plt.tight_layout()
 fig.savefig('tutorial_chart3.png')
 plt.close()
 
-# Plot 4: Cumulative Memory & Saturation (Rolling Sum)
+# --- Plot 4: Rolling Sum (Cumulative Memory & Saturation) ---
 vol = np.random.randint(5, 15, size=60)
 vol[29:36] = np.random.randint(25, 36, size=7)
 df4 = pd.DataFrame({'Day': days, 'Daily_Volume': vol})
 df4['Roll_Sum_7D'] = df4['Daily_Volume'].shift(1).rolling(7).sum()
 
 fig, ax = plt.subplots(figsize=(10, 4.8), dpi=150)
-ax.bar(
-    df4['Day'],
-    df4['Daily_Volume'],
-    color='#93c5fd',
-    width=0.8,
-    alpha=0.8,
-    label='Daily Volume (Discrete Daily Load)',
-)
-ax.plot(
-    df4['Day'],
-    df4['Roll_Sum_7D'],
-    color='#1d4ed8',
-    linewidth=2.5,
-    label='7D Rolling Sum (Accumulated System Memory)',
-)
-ax.axhline(
-    120,
-    color='#dc2626',
-    linestyle='--',
-    linewidth=2,
-    label='Capacity / Fraud Exhaustion Threshold (120)',
-)
-ax.set_title(
-    '4. Cumulative Memory: Rolling Sum Detecting Saturation & Threshold'
-    ' Breaches',
-    fontweight='bold',
-    fontsize=12,
-    pad=10,
-)
+ax.bar(df4['Day'], df4['Daily_Volume'], color='#93c5fd', width=0.8, alpha=0.8, label='Daily Volume (Discrete Daily Load)')
+ax.plot(df4['Day'], df4['Roll_Sum_7D'], color='#1d4ed8', linewidth=2.5, label='7D Rolling Sum (Accumulated System Memory)')
+ax.axhline(120, color='#dc2626', linestyle='--', linewidth=2, label='Capacity / Fraud Exhaustion Threshold (120)')
+ax.set_title('4. Cumulative Memory: Rolling Sum Detecting Saturation & Threshold Breaches', fontweight='bold', fontsize=12, pad=10)
 ax.set_xlabel('Day Index (t)', fontsize=10)
 ax.set_ylabel('Volume / Units', fontsize=10)
-ax.legend(
-    loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1'
-)
+ax.legend(loc='upper left', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1')
 ax.grid(True, linestyle=':', alpha=0.6)
 plt.tight_layout()
 fig.savefig('tutorial_chart4.png')
 plt.close()
 
+# --- Plot 5: Cyclical Time Features (Sine/Cosine vs Raw Linear Day) ---
+doy = np.arange(1, 366)
+sin_doy = np.sin(2 * np.pi * doy / 365.0)
+cos_doy = np.cos(2 * np.pi * doy / 365.0)
 
-def to_b64(path):
-  with open(path, 'rb') as f:
-    return f"data:image/png;base64,{base64.b64encode(f.read()).decode('utf-8')}"
+fig, ax = plt.subplots(figsize=(10, 4.8), dpi=150)
+ax.plot(doy, sin_doy, color='#0284c7', linewidth=2.2, label='Sin(Day of Year) - East-West Harmonic')
+ax.plot(doy, cos_doy, color='#ea580c', linewidth=2.2, label='Cos(Day of Year) - North-South Harmonic')
+ax.scatter([1, 365], [sin_doy[0], sin_doy[-1]], color='#dc2626', s=70, zorder=5, label='Dec 31 & Jan 1 Distance = 0.017 (Adjacent!)')
+ax.set_title('5. Cyclical Time Features: Sine & Cosine Encoding (Continuous Time Loop)', fontweight='bold', fontsize=12, pad=10)
+ax.set_xlabel('Day of Year (1 to 365)', fontsize=10)
+ax.set_ylabel('Transformed Coordinate Value [-1, +1]', fontsize=10)
+ax.axvline(1, color='#94a3b8', linestyle=':', alpha=0.7)
+ax.axvline(365, color='#94a3b8', linestyle=':', alpha=0.7)
+ax.legend(loc='lower right', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1')
+ax.grid(True, linestyle=':', alpha=0.6)
+plt.tight_layout()
+fig.savefig('tutorial_chart5.png')
+plt.close()
 
+# --- Plot 6: Domain Interactions (Diurnal Temp Range & Heat Index Gap) ---
+t_max = 20 + 10 * np.sin(2 * np.pi * days / 30) + np.random.normal(0, 2, size=60)
+t_min = t_max - np.random.uniform(5, 18, size=60)
+dtr = t_max - t_min
 
-img1_b64 = to_b64('tutorial_chart1.png')
-img2_b64 = to_b64('tutorial_chart2.png')
-img3_b64 = to_b64('tutorial_chart3.png')
-img4_b64 = to_b64('tutorial_chart4.png')
+fig, ax1 = plt.subplots(figsize=(10, 4.8), dpi=150)
+ax1.plot(days, t_max, color='#ef4444', linewidth=1.8, label='Raw Max Temp (°C)')
+ax1.plot(days, t_min, color='#3b82f6', linewidth=1.8, label='Raw Min Temp (°C)')
+ax1.set_ylabel('Raw Temperatures (°C)', fontsize=10)
+ax1.set_xlabel('Day Index (t)', fontsize=10)
 
-# 2. Build the Full Tutorial HTML
+ax2 = ax1.twinx()
+ax2.bar(days, dtr, color='#8b5cf6', alpha=0.35, width=0.7, label='Engineered Feature: Diurnal Range (DTR)')
+ax2.set_ylabel('Diurnal Temp Range (°C)', color='#7c3aed', fontsize=10)
+ax2.tick_params(axis='y', labelcolor='#7c3aed')
+
+lines1, labels1 = ax1.get_legend_handles_labels()
+lines2, labels2 = ax2.get_legend_handles_labels()
+ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper right', frameon=True, facecolor='#ffffff', edgecolor='#cbd5e1')
+ax1.set_title('6. Domain Interactions: Constructing Physical Feature Columns (DTR)', fontweight='bold', fontsize=12, pad=10)
+ax1.grid(True, linestyle=':', alpha=0.6)
+plt.tight_layout()
+fig.savefig('tutorial_chart6.png')
+plt.close()
+
+# --- Plot 7: Mathematical Transformations (Log Scaling Skewed Data) ---
+skewed_precip = np.random.exponential(scale=2.5, size=200)
+skewed_precip[skewed_precip < 1.5] = 0.0  # Many zero rain days
+skewed_precip[::15] = np.random.uniform(20, 80, size=len(skewed_precip[::15])) # Torrential rain spikes
+log_precip = np.log1p(skewed_precip)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.5), dpi=150)
+ax1.hist(skewed_precip, bins=25, color='#f97316', edgecolor='#c2410c', alpha=0.85)
+ax1.set_title('Raw Precipitation (Severe Right-Skew)', fontweight='bold', fontsize=10)
+ax1.set_xlabel('Precipitation (mm)', fontsize=9)
+ax1.set_ylabel('Frequency Count', fontsize=9)
+ax1.grid(True, linestyle=':', alpha=0.6)
+
+ax2.hist(log_precip, bins=25, color='#10b981', edgecolor='#047857', alpha=0.85)
+ax2.set_title('Log Transformed: log1p(Precipitation)', fontweight='bold', fontsize=10)
+ax2.set_xlabel('Transformed Scale log(1 + mm)', fontsize=9)
+ax2.set_ylabel('Frequency Count', fontsize=9)
+ax2.grid(True, linestyle=':', alpha=0.6)
+
+fig.suptitle('7. Mathematical Transformations: Converting Skewed Distributions to Gaussian Curves', fontweight='bold', fontsize=12, y=1.02)
+plt.tight_layout()
+fig.savefig('tutorial_chart7.png')
+plt.close()
+
+# Helper function to convert images to Base64 and clean up temp files
+def to_b64_and_cleanup(path):
+    with open(path, 'rb') as f:
+        b64_str = f"data:image/png;base64,{base64.b64encode(f.read()).decode('utf-8')}"
+    if os.path.exists(path):
+        os.remove(path)
+    return b64_str
+
+img1_b64 = to_b64_and_cleanup('tutorial_chart1.png')
+img2_b64 = to_b64_and_cleanup('tutorial_chart2.png')
+img3_b64 = to_b64_and_cleanup('tutorial_chart3.png')
+img4_b64 = to_b64_and_cleanup('tutorial_chart4.png')
+img5_b64 = to_b64_and_cleanup('tutorial_chart5.png')
+img6_b64 = to_b64_and_cleanup('tutorial_chart6.png')
+img7_b64 = to_b64_and_cleanup('tutorial_chart7.png')
+
+# ---------------------------------------------------------
+# 2. BUILD COMPREHENSIVE MASTER TUTORIAL HTML
+# ---------------------------------------------------------
 html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mastering Rolling Features in Machine Learning: A Visual & Mathematical Tutorial</title>
+    <title>The Master Architecture & Field Guide to Feature Engineering in Machine Learning</title>
     <style>
         :root {{
             --bg-body: #0b1120;
@@ -272,6 +213,7 @@ html_content = f"""<!DOCTYPE html>
             --accent-green: #4ade80;
             --accent-orange: #fb923c;
             --accent-red: #f87171;
+            --accent-purple: #c084fc;
         }}
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
         body {{
@@ -281,7 +223,7 @@ html_content = f"""<!DOCTYPE html>
             line-height: 1.7;
             padding: 2.5rem 1rem;
         }}
-        .container {{ max-width: 960px; margin: 0 auto; }}
+        .container {{ max-width: 1000px; margin: 0 auto; }}
         header {{ border-bottom: 1px solid var(--border); padding-bottom: 2rem; margin-bottom: 2.5rem; }}
         .badge {{
             display: inline-block;
@@ -296,328 +238,282 @@ html_content = f"""<!DOCTYPE html>
             margin-bottom: 1rem;
             border: 1px solid rgba(56, 189, 248, 0.25);
         }}
-        h1 {{ font-size: 2.3rem; font-weight: 800; color: var(--text-primary); line-height: 1.25; margin-bottom: 1rem; }}
+        h1 {{ font-size: 2.4rem; font-weight: 800; color: var(--text-primary); line-height: 1.25; margin-bottom: 1rem; }}
         .lead {{ font-size: 1.15rem; color: var(--text-secondary); }}
-        h2 {{ font-size: 1.6rem; color: var(--text-primary); margin: 2.5rem 0 1rem 0; }}
-        h3 {{ font-size: 1.2rem; color: var(--accent-cyan); margin: 1.5rem 0 0.5rem 0; }}
-        p {{ margin-bottom: 1rem; }}
-        strong {{ color: var(--text-primary); }}
-        .concept-card {{
+        
+        section {{
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 2rem;
-            margin-bottom: 2.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }}
+        h2 {{ font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; border-left: 4px solid var(--accent-cyan); padding-left: 0.75rem; }}
+        h3 {{ font-size: 1.15rem; font-weight: 600; color: var(--accent-cyan); margin: 1.25rem 0 0.5rem 0; }}
+        p {{ margin-bottom: 1rem; font-size: 1.02rem; }}
+        
         .chart-box {{
             background: #ffffff;
             border-radius: 8px;
-            padding: 0.6rem;
+            padding: 0.5rem;
             margin: 1.5rem 0;
-            border: 1px solid var(--border);
+            text-align: center;
         }}
-        .chart-box img {{ width: 100%; height: auto; display: block; }}
-        .grid-2 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.2rem 0; }}
+        .chart-box img {{ max-width: 100%; height: auto; border-radius: 6px; }}
+        
+        .grid-2 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1rem; }}
         @media (max-width: 768px) {{ .grid-2 {{ grid-template-columns: 1fr; }} }}
-        .sub-box {{
+        
+        .card-inner {{
             background: var(--bg-inner);
-            padding: 1.2rem;
-            border-radius: 8px;
             border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
         }}
-        .sub-box h4 {{ font-size: 0.95rem; text-transform: uppercase; margin-bottom: 0.5rem; }}
-        .sub-box.why h4 {{ color: var(--accent-orange); }}
-        .sub-box.ml h4 {{ color: var(--accent-green); }}
-        .takeaway-box {{
-            background: rgba(56, 189, 248, 0.08);
-            border-left: 4px solid var(--accent-cyan);
+        .card-inner strong {{ color: var(--text-primary); }}
+        
+        .formula-box {{
+            background: var(--bg-inner);
+            border-left: 3px solid var(--accent-orange);
             padding: 1rem 1.25rem;
             border-radius: 0 8px 8px 0;
-            margin-top: 1.2rem;
+            font-family: "Fira Code", monospace;
+            color: var(--accent-orange);
+            margin: 1rem 0;
         }}
-        .leakage-callout {{
-            background: rgba(248, 113, 113, 0.08);
-            border: 1px solid rgba(248, 113, 113, 0.3);
-            border-left: 4px solid var(--accent-red);
-            padding: 1.25rem;
-            border-radius: 0 8px 8px 0;
-            margin: 2rem 0;
-        }}
-        .leakage-callout h3 {{ color: var(--accent-red); margin-top: 0; }}
+        
         table {{
             width: 100%;
             border-collapse: collapse;
             margin: 1.5rem 0;
-            background: var(--bg-card);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
+            font-size: 0.95rem;
         }}
-        th, td {{ padding: 0.9rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }}
-        th {{ background: rgba(255, 255, 255, 0.04); color: var(--text-primary); font-weight: 600; }}
-        code {{
-            font-family: monospace;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.2rem 0.45rem;
-            border-radius: 4px;
-            color: var(--accent-cyan);
+        th, td {{ padding: 0.85rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }}
+        th {{ background: var(--bg-inner); color: var(--text-primary); font-weight: 600; }}
+        tr:hover {{ background: rgba(255, 255, 255, 0.02); }}
+        
+        code {{ background: rgba(56, 189, 248, 0.1); color: var(--accent-cyan); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; font-size: 0.9rem; }}
+        pre {{ background: var(--bg-inner); padding: 1.25rem; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); margin: 1rem 0; }}
+        pre code {{ background: none; color: var(--text-body); padding: 0; font-size: 0.9rem; }}
+        
+        .highlight-leakage {{
+            background: rgba(248, 113, 113, 0.1);
+            border-left: 4px solid var(--accent-red);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0;
         }}
-        pre {{
-            background: var(--bg-inner);
-            border: 1px solid var(--border);
-            padding: 1.25rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            color: #f1f5f9;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin: 1.2rem 0;
-        }}
-        pre code {{ background: none; padding: 0; color: inherit; }}
-        ul {{ margin-left: 1.5rem; margin-bottom: 1rem; }}
-        li {{ margin-bottom: 0.4rem; }}
-        footer {{
-            border-top: 1px solid var(--border);
-            padding-top: 2rem;
-            margin-top: 3.5rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            text-align: center;
-        }}
+        
+        footer {{ text-align: center; padding: 2rem 0; color: var(--text-secondary); font-size: 0.9rem; border-top: 1px solid var(--border); }}
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="badge">Machine Learning Feature Engineering Guide</div>
-        <h1>Mastering Rolling Features in Machine Learning</h1>
-        <p class="lead">Why isolated tabular rows fail, and how trailing statistical windows inject critical context, expose regime changes, and eliminate lookahead data leakage.</p>
+        <span class="badge">Master Feature Engineering Field Guide</span>
+        <h1>The Master Architecture Guide to Feature Engineering in Machine Learning</h1>
+        <p class="lead">From Rolling Windows & Cyclical Time Waves to Domain Interaction Ratios and Leakage-Free Scaling Pipelines.</p>
     </header>
 
+    <!-- SECTION 1: ROLLING FEATURES -->
     <section>
-        <h2>Why ML Models Suffer from "Amnesia"</h2>
-        <p>Standard tabular machine learning algorithms—such as <strong>XGBoost</strong>, <strong>LightGBM</strong>, <strong>CatBoost</strong>, and feedforward neural networks—treat every row in your dataset as an independent, identically distributed (IID) observation. Unlike sequential networks (RNNs/LSTMs), tree-based algorithms have <strong>no native memory</strong>.</p>
-        <p>If you feed a model a naked value—like <code>temperature = 22°C</code> or <code>price = $120</code>—the model cannot tell whether $120 represents an aggressive breakout rally or an ongoing catastrophic market crash. <strong>Rolling features</strong> solve this by sliding a trailing window over past observations, supplying localized context: trend, volatility, envelope boundaries, and memory load.</p>
+        <h2>1. Rolling Windows: Denoising, Volatility, Envelopes & Memory</h2>
+        <p>A rolling feature extracts moving statistical signals over a lookback window $W$. To guarantee <strong>zero data leakage</strong>, rolling features must strictly shift by 1 step (<code>shift(1)</code>) so the current row's target is never visible during window aggregation.</p>
+        
+        <div class="grid-2">
+            <div class="card-inner">
+                <h3>A. Rolling Mean (Denoising)</h3>
+                <p>Filters out high-frequency noise and isolates macro trends.</p>
+                <div class="formula-box">Mean = (1 / K) * ∑ x_(t-i)</div>
+            </div>
+            <div class="card-inner">
+                <h3>B. Rolling StdDev (Volatility)</h3>
+                <p>Detects market regime shifts, stability, and risk jumps.</p>
+                <div class="formula-box">Std = √[ (1 / (K-1)) * ∑ (x - µ)² ]</div>
+            </div>
+        </div>
+        
+        <div class="chart-box"><img src="{img1_b64}" alt="Rolling Mean Chart"></div>
+        <div class="chart-box"><img src="{img2_b64}" alt="Rolling StdDev Chart"></div>
+
+        <div class="grid-2">
+            <div class="card-inner">
+                <h3>C. Rolling Min/Max (Dynamic Corridor)</h3>
+                <p>Establishes resistance ceilings and support floors to trigger breakout alerts.</p>
+            </div>
+            <div class="card-inner">
+                <h3>D. Rolling Sum (Cumulative Saturation)</h3>
+                <p>Tracks system memory (e.g. soil moisture, fraud spend limits, API quotas).</p>
+            </div>
+        </div>
+
+        <div class="chart-box"><img src="{img3_b64}" alt="Rolling Min/Max Chart"></div>
+        <div class="chart-box"><img src="{img4_b64}" alt="Rolling Sum Chart"></div>
     </section>
 
-    <div class="leakage-callout">
-        <h3>The Golden Rule of Predictive ML: Eliminating Temporal Leakage</h3>
-        <p>In standard data analysis, a 7-day rolling window on day <em>t</em> includes day <em>t</em> itself: <code>df['val'].rolling(7).mean()</code>.</p>
-        <p>In <strong>predictive machine learning</strong>, doing this creates <strong>target / lookahead leakage</strong>. If day <em>t</em>'s target or current value is part of the feature calculation, your model peeks into the future during training, scoring 99% accuracy offline and failing completely in production.</p>
-        <p><strong>The Fix:</strong> All rolling features must strictly lag by at least one step: <code>df['val'].shift(1).rolling(window).agg()</code>. Day <em>t</em> features must strictly reflect information known up to <em>t-1</em>.</p>
-    </div>
-
-    <!-- CONCEPT 1: MEAN -->
-    <div class="concept-card">
-        <h2>1. Denoising & Directional Trend (Rolling Mean)</h2>
-        <p>The <strong>Rolling Mean</strong> computes the average of the preceding <code>k</code> time steps, acting as a low-pass filter on continuous data streams.</p>
-
-        <div class="grid-2">
-            <div class="sub-box why">
-                <h4>What It Signifies</h4>
-                <p>Real-world measurements are contaminated with high-frequency noise (weather fluctuations, intraday chop, sensor flicker). The rolling average cancels out noise and exposes the true macro trajectory.</p>
-            </div>
-            <div class="sub-box ml">
-                <h4>Why It Is Crucial for ML</h4>
-                <p>Decision trees split on exact values. Raw daily chop leads to spurious splits and severe overfitting. The rolling mean provides the model with the underlying structural direction.</p>
-            </div>
-        </div>
-
-        <div class="chart-box">
-            <img src="{img1_b64}" alt="Rolling Mean Plot">
-        </div>
-
-        <div class="takeaway-box">
-            <strong>Key Insight from the Visual:</strong> While the dashed gray raw series whips up and down constantly, the <strong>7-Day Rolling Mean (orange curve)</strong> isolates the clean upward drift. In quantitative finance, this is the exact principle behind 50 DMA and 200 DMA trend filters.
-        </div>
-
-        <h3>Production ML Feature Formulations:</h3>
-        <ul>
-            <li><code>trend_momentum = (rolling_mean_7 - rolling_mean_30) / (rolling_mean_30 + 1e-6)</code> (Moving average velocity crossover).</li>
-            <li><code>mean_divergence = (current_val - rolling_mean_20) / (rolling_mean_20 + 1e-6)</code> (Measures whether today's price is statistically overextended).</li>
-        </ul>
-    </div>
-
-    <!-- CONCEPT 2: STD DEV -->
-    <div class="concept-card">
-        <h2>2. Quantifying Regime Shifts & Risk (Rolling Standard Deviation)</h2>
-        <p>The <strong>Rolling Standard Deviation</strong> measures data dispersion around the trailing rolling mean over the last <code>k</code> time steps.</p>
-
-        <div class="grid-2">
-            <div class="sub-box why">
-                <h4>What It Signifies</h4>
-                <p>Systems transition between operating states (regimes). A metric can oscillate around 100 in a calm state (low variance) and suddenly shift into wild turmoil (high variance), even if its average stays identical.</p>
-            </div>
-            <div class="sub-box ml">
-                <h4>Why It Is Crucial for ML</h4>
-                <p>A delta of +2 units in a calm market carries a completely different probability distribution than +2 units during high volatility. Rolling StdDev provides the model with a direct metric of uncertainty to widen prediction intervals or alter tree split paths.</p>
-            </div>
-        </div>
-
-        <div class="chart-box">
-            <img src="{img2_b64}" alt="Rolling StdDev Plot">
-        </div>
-
-        <div class="takeaway-box">
-            <strong>Key Insight from the Visual:</strong> The gray baseline mean stays nearly flat near 100 across the entire 60 days. A model monitoring only averages would conclude nothing changed. However, on Day 31, the <strong>red Rolling StdDev curve</strong> surges from ~1.2 to 14.0, directly capturing the regime shift.
-        </div>
-
-        <h3>Production ML Feature Formulations:</h3>
-        <ul>
-            <li><code>volatility_regime = rolling_std_14</code> (Direct volatility and risk indicator).</li>
-            <li><code>rolling_z_score = (current_val - rolling_mean_14) / (rolling_std_14 + 1e-6)</code> (Standardized score: how many standard deviations today deviates from baseline).</li>
-        </ul>
-    </div>
-
-    <!-- CONCEPT 3: ENVELOPES (MIN / MAX) -->
-    <div class="concept-card">
-        <h2>3. Dynamic Operating Envelopes (Rolling Min / Max)</h2>
-        <p><strong>Rolling Min and Max</strong> track the trailing low and high over <code>k</code> periods, establishing dynamic support floors and resistance ceilings.</p>
-
-        <div class="grid-2">
-            <div class="sub-box why">
-                <h4>What It Signifies</h4>
-                <p>Fixed static thresholds fail as systems scale or drift. An operating envelope creates an adaptive corridor that expands and contracts with the system's trailing historical variance.</p>
-            </div>
-            <div class="sub-box ml">
-                <h4>Why It Is Crucial for ML</h4>
-                <p>Enables real-time breakout detection. By freezing the boundary at <code>t-1</code>, today's live incoming value can pierce above the ceiling, giving tree models an unambiguous split: <code>current_val - rolling_max >= 0</code>.</p>
-            </div>
-        </div>
-
-        <div class="chart-box">
-            <img src="{img3_b64}" alt="Dynamic Envelopes Plot">
-        </div>
-
-        <div class="takeaway-box">
-            <strong>Key Insight from the Visual:</strong> During Days 11–33, the metric oscillates safely within the shaded 10-day corridor (95 to 105). On <strong>Day 34</strong>, the price explodes to 127. Because the ceiling was strictly lagged at 105, the signal <code>Value - Ceiling = +22</code> fires an immediate real-time breakout trigger without lookahead bias.
-        </div>
-
-        <h3>Production ML Feature Formulations:</h3>
-        <ul>
-            <li><code>is_breakout = int(current_val > rolling_max_10)</code> (Binary breakout alert).</li>
-            <li><code>envelope_position = (current_val - roll_min) / (roll_max - roll_min + 1e-6)</code> (Dynamic Min-Max oscillator normalizing non-stationary series between 0.0 and 1.0).</li>
-        </ul>
-    </div>
-
-    <!-- CONCEPT 4: SUM -->
-    <div class="concept-card">
-        <h2>4. Cumulative Saturation & Memory (Rolling Sum)</h2>
-        <p>The <strong>Rolling Sum</strong> aggregates the discrete volume or load over a fixed trailing interval of <code>k</code> periods.</p>
-
-        <div class="grid-2">
-            <div class="sub-box why">
-                <h4>What It Signifies</h4>
-                <p>Real-world systems have memory and tipping points. Moderate individual events are harmless on their own, but become catastrophic when clustered consecutively.</p>
-            </div>
-            <div class="sub-box ml">
-                <h4>Why It Is Crucial for ML</h4>
-                <p>Single-day classifiers only see today's value (e.g., 30 units of rain or a $300 card charge) and predict low risk. The rolling sum supplies the accumulated burden, enabling the model to catch capacity exhaustion and threshold breaches.</p>
-            </div>
-        </div>
-
-        <div class="chart-box">
-            <img src="{img4_b64}" alt="Rolling Sum Plot">
-        </div>
-
-        <div class="takeaway-box">
-            <strong>Key Insight from the Visual:</strong> The discrete light-blue bars during Days 30–36 are modest (~25–35 units). However, because they arrive consecutively, the <strong>7-Day Rolling Sum (dark blue curve)</strong> launches past 200, cleanly breaching the 120 alert threshold. Exactly 7 days after the burst ends, the sum drains back down to normal.
-        </div>
-
-        <h3>Production ML Feature Formulations:</h3>
-        <ul>
-            <li><code>saturation_ratio = rolling_sum_7 / system_capacity_limit</code> (Direct buffer exhaustion ratio for queues, memory heaps, or reservoir dams).</li>
-            <li><code>velocity_risk = rolling_sum_card_spend_1h</code> (Detects automated script attacks and high-velocity payment fraud).</li>
-        </ul>
-    </div>
-
-    <!-- SUMMARY TABLE -->
+    <!-- SECTION 2: CYCLICAL TIME FEATURES -->
     <section>
-        <h2>Master Architectural Cheat Sheet</h2>
+        <h2>2. Cyclical Time Features: Encoding Time as a Continuous Circle</h2>
+        <p>Calendar metrics like <code>Day of Year</code> (1 to 365) or <code>Hour of Day</code> (0 to 23) are naturally cyclical. Naive numeric representations create an artificial 364-unit gap between Dec 31st and Jan 1st. We project these variables onto a unit circle using <strong>Sine</strong> and <strong>Cosine</strong> components.</p>
+        
+        <div class="formula-box">
+            sin_time = sin(2 * π * time / Period)<br>
+            cos_time = cos(2 * π * time / Period)
+        </div>
+        
+        <div class="chart-box"><img src="{img5_b64}" alt="Cyclical Time Chart"></div>
+        
+        <div class="card-inner">
+            <strong>Why Year is Excluded from Sine/Cosine:</strong>
+            <p>Months and hours repeat in loops ($12 \rightarrow 1$). <code>Year</code> is linear and monotonic ($2023 \rightarrow 2024$). Year measures long-term secular drift (e.g., climate change), whereas Sine/Cosine measures annual seasonality.</p>
+        </div>
+    </section>
+
+    <!-- SECTION 3: DOMAIN INTERACTIONS -->
+    <section>
+        <h2>3. Domain Interaction Features: Creating Physical Feature Columns</h2>
+        <p>Machine learning models perform significantly better when we combine raw variables into high-level physical formulas rather than forcing decision trees to rediscover physics from scratch.</p>
+        
+        <div class="chart-box"><img src="{img6_b64}" alt="Domain Interactions Chart"></div>
+
         <table>
             <thead>
                 <tr>
-                    <th>Feature Family</th>
-                    <th>Pandas Implementation (Lagged)</th>
-                    <th>Signal Supplied to ML Model</th>
-                    <th>Real-World Domain Applications</th>
+                    <th>Engineered Feature Column</th>
+                    <th>Formula</th>
+                    <th>Physical Signal to ML Model</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Rolling Mean</strong></td>
-                    <td><code>x.shift(1).rolling(k).mean()</code></td>
-                    <td>Denoised macro trendline</td>
-                    <td>Financial Moving Averages (50 DMA), Baseline Store Sales</td>
+                    <td><strong>Diurnal Temp Range (DTR)</strong></td>
+                    <td><code>temp_max - temp_min</code></td>
+                    <td>Clear-sky radiational cooling vs overcast cloud cover</td>
                 </tr>
                 <tr>
-                    <td><strong>Rolling StdDev</strong></td>
-                    <td><code>x.shift(1).rolling(k).std()</code></td>
-                    <td>System stability, volatility regime</td>
-                    <td>Bollinger Bands, Risk modeling, SRE latency jitter</td>
+                    <td><strong>Apparent Heat Gap</strong></td>
+                    <td><code>apparent_temp - raw_temp</code></td>
+                    <td>Human heat index & wind-chill humidity distortion</td>
                 </tr>
                 <tr>
-                    <td><strong>Rolling Min / Max</strong></td>
-                    <td><code>x.shift(1).rolling(k).max()</code></td>
-                    <td>Dynamic operating floor & ceiling</td>
-                    <td>Donchian channel breakouts, Server CPU peak throttling</td>
-                </tr>
-                <tr>
-                    <td><strong>Rolling Sum</strong></td>
-                    <td><code>x.shift(1).rolling(k).sum()</code></td>
-                    <td>Cumulative load & saturation</td>
-                    <td>Soil moisture flood alerts, Payment velocity fraud detection</td>
+                    <td><strong>Water Balance Ratio</strong></td>
+                    <td><code>precipitation / (evapotranspiration + 1e-5)</code></td>
+                    <td>Net soil hydration & drought saturation index</td>
                 </tr>
             </tbody>
         </table>
     </section>
 
-    <!-- CODE SNIPPET -->
+    <!-- SECTION 4: MATHEMATICAL TRANSFORMS -->
     <section>
-        <h2>Production Python Implementation (Pandas)</h2>
-        <pre><code>import pandas as pd
+        <h2>4. Mathematical Transformations: Fixing Skewed Distributions</h2>
+        <p>Variables like rainfall, snowfall, or financial transaction amounts are heavily right-skewed with extreme zero-inflation. Linear models and neural networks fail on these. We apply log or power transformations to compress extreme spikes into bell-shaped Gaussian curves.</p>
+        
+        <div class="chart-box"><img src="{img7_b64}" alt="Mathematical Transforms Chart"></div>
+
+        <div class="grid-2">
+            <div class="card-inner">
+                <h3>Log Transform (<code>log1p</code>)</h3>
+                <p><code>y = ln(1 + x)</code>: Compresses exponential Spikes while preserving 0s safely.</p>
+            </div>
+            <div class="card-inner">
+                <h3>Yeo-Johnson Power Transform</h3>
+                <p>Optimizes power parameter $\\lambda$ to normalize distributions, supporting <strong>negative numbers</strong> (e.g. sub-zero temperatures).</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: CATEGORICAL ENCODING TAXONOMY -->
+    <section>
+        <h2>5. Categorical Encoding Taxonomy</h2>
+        <p>Translating non-numeric text labels into model-digestible numerical matrices.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Encoding Technique</th>
+                    <th>Mechanism</th>
+                    <th>Best Used For</th>
+                    <th>Leakage Guardrail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>One-Hot Encoding</strong></td>
+                    <td>Creates binary 0/1 indicator columns per category</td>
+                    <td>Low cardinality (&lt; 10 categories: Season, Day)</td>
+                    <td>None (Independent of Target)</td>
+                </tr>
+                <tr>
+                    <td><strong>Ordinal Encoding</strong></td>
+                    <td>Assigns ordered integers (1, 2, 3)</td>
+                    <td>Categories with natural rank (Light, Severe, Extreme)</td>
+                    <td>None (Independent of Target)</td>
+                </tr>
+                <tr>
+                    <td><strong>Frequency Encoding</strong></td>
+                    <td>Replaces category with its occurrence count</td>
+                    <td>High cardinality (Zip codes, User IDs)</td>
+                    <td>None (Independent of Target)</td>
+                </tr>
+                <tr>
+                    <td><strong>Target Encoding</strong></td>
+                    <td>Replaces category with mean of Target ($y$)</td>
+                    <td>Complex high-dimensional tabular data</td>
+                    <td><strong style="color: var(--accent-red);">MUST use K-Fold Out-of-Fold on Train set only!</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECTION 6: PRODUCTION PIPELINE CODE -->
+    <section>
+        <h2>6. Master Production Feature Engineering Pipeline (Polars & Pandas)</h2>
+        <p>A complete, leak-free feature engineering pipeline implementing Lags, Rolling Windows, Cyclical Waves, and Physical Interactions.</p>
+
+        <pre><code>import polars as pl
 import numpy as np
 
-def generate_rolling_feature_pipeline(df: pd.DataFrame, value_col: str, group_col: str = None) -> pd.DataFrame:
+def build_master_feature_pipeline(df: pl.DataFrame) -> pl.DataFrame:
     \"\"\"
-    Generates a production-ready, leak-free rolling feature vector for tabular time-series models.
-    Supports both single-series and grouped entities (e.g., per-stock or per-user IDs).
+    Production-grade, leak-free feature pipeline in Polars.
+    Guarantees strict temporal boundaries (shift(1)) and zero future leakage.
     \"\"\"
-    df = df.copy()
-    
-    # 1. Isolate the series (grouped or single)
-    target = df.groupby(group_col)[value_col] if group_col else df[value_col]
-    
-    # 2. CRITICAL: Strictly shift by 1 step to prevent target/lookahead leakage
-    lagged = target.shift(1)
-    
-    # 3. Rolling Mean & Relative Stationarity Ratios
-    df['roll_mean_7'] = lagged.rolling(7).mean()
-    df['roll_mean_30'] = lagged.rolling(30).mean()
-    df['trend_ratio_7'] = df[value_col] / (df['roll_mean_7'] + 1e-6)
-    df['momentum_spread'] = (df['roll_mean_7'] - df['roll_mean_30']) / (df['roll_mean_30'] + 1e-6)
-    
-    # 4. Rolling Standard Deviation & Volatility Regime
-    df['roll_std_14'] = lagged.rolling(14).std()
-    df['rolling_z_score'] = (df[value_col] - df['roll_mean_7']) / (df['roll_std_14'] + 1e-6)
-    
-    # 5. Dynamic Operating Envelope (Min/Max & Breakouts)
-    df['roll_min_14'] = lagged.rolling(14).min()
-    df['roll_max_14'] = lagged.rolling(14).max()
-    df['is_breakout'] = (df[value_col] > df['roll_max_14']).astype(int)
-    df['envelope_pos'] = (df[value_col] - df['roll_min_14']) / (df['roll_max_14'] - df['roll_min_14'] + 1e-6)
-    
-    # 6. Cumulative Saturation & Memory
-    df['roll_sum_7'] = lagged.rolling(7).sum()
-    
-    return df
+    return (
+        df.sort("time")
+        .with_columns([
+            # 1. TARGET
+            pl.col("temperature_2m_max (°C)").alias("target_today_max_temp"),
+
+            # 2. LAG FEATURES (Strictly shift 1+)
+            pl.col("temperature_2m_max (°C)").shift(1).alias("temp_lag1"),
+            pl.col("temperature_2m_max (°C)").shift(2).alias("temp_lag2"),
+
+            # 3. ROLLING FEATURES (Shifted first!)
+            pl.col("temperature_2m_max (°C)").shift(1).rolling_mean(7).alias("temp_roll_mean_7"),
+            pl.col("temperature_2m_max (°C)").shift(1).rolling_std(14).alias("temp_roll_std_14"),
+            pl.col("temperature_2m_max (°C)").shift(1).rolling_max(30).alias("temp_roll_max_30"),
+
+            # 4. CYCLICAL TIME FEATURES (Sine & Cosine)
+            (2 * np.pi * pl.col("time").dt.ordinal_day() / 365.0).sin().alias("sin_day_of_year"),
+            (2 * np.pi * pl.col("time").dt.ordinal_day() / 365.0).cos().alias("cos_day_of_year"),
+
+            # 5. DOMAIN PHYSICAL INTERACTIONS
+            (pl.col("temperature_2m_max (°C)") - pl.col("temperature_2m_min (°C)")).alias("dtr_range"),
+            (pl.col("apparent_temperature_max (°C)") - pl.col("temperature_2m_max (°C)")).alias("heat_index_gap"),
+
+            # 6. SKEWNESS CORRECTION (Log transform)
+            (pl.col("precipitation_sum (mm)") + 1.0).log().alias("log_precipitation")
+        ])
+        .drop_nulls()
+    )
 </code></pre>
     </section>
 
     <footer>
-        <p>Mastering Rolling Features in Machine Learning &bull; Standalone Tutorial Guide &bull; Ready for offline use, Git repositories, or GitHub Pages deployment.</p>
+        <p>The Master Architecture & Field Guide to Feature Engineering &bull; Production ML Documentation &bull; Google Deepmind Pair Programming Artifact</p>
     </footer>
 </div>
 
@@ -625,11 +521,15 @@ def generate_rolling_feature_pipeline(df: pd.DataFrame, value_col: str, group_co
 </html>
 """
 
-output_filename = "rolling_features_tutorial_guide.html"
-with open(output_filename, "w", encoding="utf-8") as f:
-  f.write(html_content)
+# Save HTML to root index.html, resources/, and manual-exp/ for GitHub Pages & local access
+targets = [
+    "index.html",
+    "resources/index.html",
+    "resources/rolling_features_tutorial_guide.html",
+    "manual-exp/rolling_features_tutorial_guide.html"
+]
 
-print(
-    f"Successfully written {output_filename} ({os.path.getsize(output_filename)}"
-    " bytes)"
-)
+for target in targets:
+    with open(target, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print(f"Successfully generated {target} ({os.path.getsize(target)} bytes)")
